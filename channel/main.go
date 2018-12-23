@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
-
+import
+(
+	"fmt"
+	"time"
+)
 var input_chan = make(chan byte)
 var output_chan = make(chan byte)
 func input(input string){
@@ -29,21 +32,32 @@ func contain(match string) {
 
 }
 
-func output(){
+func output(res chan <- int){
+
 	var output []byte
 	for  input:= range output_chan {
 		output = append(output,  input)
 	}
 	fmt.Println(string(output))
+	time.Sleep(time.Millisecond * 5)
+	res <- len(output)
 }
 
 
 
 func main() {
+	var res = make(chan int, 1)
 	go input("abcdefg")
 	go contain("begij")
-	output()
 
+
+	output(res)
+	select{
+		case data:=<-res:
+			fmt.Println("res = ", data)
+		case <-time.After(time.Second * 1):
+			fmt.Println("timeout 1")
+	}
 	//c := make(chan int, 3)
 	//
 	//go func() {
