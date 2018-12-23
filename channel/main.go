@@ -3,6 +3,8 @@ package main
 import
 (
 	"fmt"
+	"github.com/spf13/viper"
+	"go_work/channel/httpsvr"
 	"time"
 )
 var input_chan = make(chan byte)
@@ -40,7 +42,8 @@ func output(res chan <- int){
 	}
 	fmt.Println(string(output))
 	time.Sleep(time.Millisecond * 5)
-	res <- len(output)
+
+	//res <- len(output)
 }
 
 
@@ -49,13 +52,19 @@ func main() {
 	var res = make(chan int, 1)
 	go input("abcdefg")
 	go contain("begij")
-
-
+	configFile := "./config.toml"
+	viper.SetConfigFile(configFile)
+	viper.ReadInConfig()
+	cros := []string{}
+	httpPort := viper.GetInt("DGW.local_http_port");
+	user := viper.GetString("DGW.local_http_user")
+	pwd := viper.GetString("DGW.local_http_pwd")
+	httpsvr.StartHTTP(fmt.Sprintf(":%d", httpPort), user, pwd,cros);
 	output(res)
 	select{
 		case data:=<-res:
 			fmt.Println("res = ", data)
-		case <-time.After(time.Second * 1):
+		case <-time.After(time.Second * 100000000):
 			fmt.Println("timeout 1")
 	}
 	//c := make(chan int, 3)
